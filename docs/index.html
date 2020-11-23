@@ -12,18 +12,30 @@
       <input type="text" id="remote-id">
       <input type="button" id="connect-remote" value="connect">
     </p>
+    <input type="button" id="send-data" value="send">
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
     <script src="https://cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
     <script lang="javascript" >
       const peer = new Peer({ key: '204da189-ef03-445c-a371-b8bddba2e7be', debug: 3 })
       peer.on('open', () => document.getElementById('my-id').textContent = peer.id)
+
+      let dConn = null
       peer.on('connection', dataConnection => {
         document.getElementById('remote-id').value = dataConnection.remoteId
+        dConn = dataConnection
+        dConn.on('open', () => console.log(`open.`))
+        dConn.on('data', ({ name, data }) => console.log(`data. name=${name} data=${data}`))
+        dConn.on('close', () => console.log(`close.`))
+        dConn.on('error', () => console.log(`error.`))
       })
 
       document.getElementById('connect-remote').onclick = () => {
-        const dataConnection = peer.connect(document.getElementById('remote-id').value)
+        dConn = peer.connect(document.getElementById('remote-id').value)
+      }
+
+      document.getElementById('send-data').onclick = () => {
+        dConn.send({ name: 'hoge', data: 'fuga' })
       }
     </script>
   </body>
